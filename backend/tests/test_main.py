@@ -6,19 +6,11 @@ from tile import Tile
 from column import Column
 
 def test_tile():
-    column = Column(0, [], [])
+    column = Column(id=0)
     tile = Tile(id=0, column = column)
     assert tile.id == 0
     assert tile.value == 0
-    assert tile.possible_values == {1, 2, 3, 4, 5, 6, 7, 8, 9}
     assert tile.model_dump() == {
         "id": 0,
-        "value": 0,
-        "column": {
-            "id": 0,
-            "values": [],
-            "tiles": [],
-        },
-        "row": None,
-        "group": None,
+        "value": 0
     }

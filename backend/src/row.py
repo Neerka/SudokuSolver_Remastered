@@ -1,19 +1,28 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
+from boardStructure import BoardStructure
+from tile import Tile
 
-@dataclass
-class Row:
+class Row(BoardStructure):
     """
     The row class has the following attributes:
     - id: the index of the row (0-8, left to right)
     - tiles: the tiles in the row
     """
-    id: int
-    values: list[int]
-    tiles: list[int]
+    _type: str = "Row"
 
-    def addTile(self, tile: int) -> None:
+    def findValues(self) -> None:
         """
-        Add a tile to the row
+        Find the values of the tiles in the row
         """
-        self.tiles.append(tile)
-        self.values.add(tile.value)
+        values = [tile for tile in self._tiles]
+        for tile in self._tiles:
+            tile.findInRow(values)
+
+    def findUniqueValues(self) -> None:
+        """
+        Find the unique possible values of the tiles in the row
+        """
+        values = [tile.possible_values for tile in self._tiles]
+        for tile in self._tiles:
+            tile.findUniqueInRow(values)
+        

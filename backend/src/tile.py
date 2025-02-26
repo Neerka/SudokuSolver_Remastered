@@ -1,64 +1,86 @@
-from pydantic import BaseModel, Field, PrivateAttr
-from typing import Optional
-from column import Column
-from row import Row
-from group import Group
+from pydantic import BaseModel, PrivateAttr
+from itertools import combinations
 
 class Tile(BaseModel):
     """
     The tile class has the following attributes:
     - id: the index of the tile (0-80, left to right, top to bottom)
-    - column: the column index of the tile
-    - row: the row index of the tile
-    - group: the group (a 3x3 subsquare on the board) index of the tile
     - value: the value of the tile, 0 if the value is unknown
     - possible_values: the possible values for the tile
+    - column_values: the possible values of the tile, based on the column
+    - row_values: the possible values of the tile, based on the row
+    - group_values: the possible values of the tile, based on the group
 
-    Rules for the currently possible values:
+    Rules for the possible values (in case someone didn't know how to play sudoku):
         1. for each two different tiles A and B, if A.column == B.column, then A.value != B.value
         2. for each two different tiles A and B, if A.row == B.row, then A.value != B.value
         3. for each two different tiles A and B, if A.group == B.group, then A.value != B.value
+        a. Those tiles don't have column, row or group attributes. This description was just to explain the rules.
+
+    Tile class has the following methods:
+    - findInColumn: find the possible values for the tile based on the column
+    - findInRow: find the possible values for the tile based on the row
+    - findInGroup: find the possible values for the tile based on the group
+    - findPossibleValues: find the possible values for the tile based on the column, row, and group
+    - updateValue: update the value of the tile based on the possible values
+    - findUniqueCandidatesInColumns: find the possible values for the tile based on the column
+    - findUniqueCandidatesInRows: find the possible values for the tile based on the row
+    - findUniqueCandidatesInGroups: find the possible values for the tile based on the group
+    - updateOnUniqueCandidates: update the value of the tile based on the unique candidates in the column, row, and group
+    - update: update the possible values and the value of the
     """
 
     # Basic tile class to indicate a tile in the sudoku board
     id: int
-    column: Optional[Column] = None
-    row: Optional[Row] = None
-    group: Optional[Group] = None
-    value: Optional[int] = 0  # value for unknown tiles
-    _possible_values: set[int] = PrivateAttr()
+    _value: int = 0  # value for unknown tiles
+    _possible_values: set[int] = PrivateAttr(default={1, 2, 3, 4, 5, 6, 7, 8, 9})
+
+    # Sets of possible values based on the column, row, and group
+    _column_values: set[int] = PrivateAttr(default=set())
+    _row_values: set[int] = PrivateAttr(default=set())
+    _group_values: set[int] = PrivateAttr(default=set())
+
+    # Sets of unique possible values based on the column, row, and group (used for advanced solving)
+    _unigue_column_values: set[int] = PrivateAttr(default=set())
+    _unigue_row_values: set[int] = PrivateAttr(default=set())
+    _unigue_group_values: set[int] = PrivateAttr(default=set())
+
+    @property
+    def value(self) -> int:
+        return self._value
     
-    def __init__(self, **data):
-        super().__init__(**data)
-        self._possible_values = {1, 2, 3, 4, 5, 6, 7, 8, 9} if self.value == 0 else {}
+    @value.setter
+    def value(self, value: int) -> None:
+        self._value = value
+        self._possible_values = {}
 
     @property
     def possible_values(self) -> set[int]:
         return self._possible_values
 
-    def findInColumn(self) -> set[int]:
+    def findInColumn(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the column
         """
-        return self._possible_values - self.column.values
+        self._column_values = self._possible_values - set(values)
 
-    def findInRow(self) -> set[int]:
+    def findInRow(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the row
         """
-        return self._possible_values - self.row.values
+        self._row_values = self._possible_values - set(values)
     
-    def findInGroup(self) -> set[int]:
+    def findInGroup(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the group
         """
-        return self._possible_values - self.group.values
+        self._group_values = self._possible_values - set(values)
     
     def findPossibleValues(self) -> None:
         """
         Find the possible values for the tile based on the column, row, and group
         """
-        result = self.findInColumn() & self.findInRow() & self.findInGroup()
+        result = self._column_values & self._row_values & self._group_values
         self._possible_values = result
     
     def updateValue(self) -> None:
@@ -66,63 +88,86 @@ class Tile(BaseModel):
         Update the value of the tile based on the possible values
         """
         if len(self._possible_values) == 1:
-            self.value = self._possible_values.pop()
+            self.value(self._possible_values.pop())
+        elif len(self._possible_values) == 0:
+            ValueError("Tile has no possible values")
+        else:
+            ValueError("Tile has multiple possible values")
 
-    def findUniqueCandidatesInColumns(self) -> set[int]:
+    def findUniqueCandidatesInColumns(self, values: set[set[int]]) -> None:
         """
         Find the possible values for the tile based on the column
         """
         temp = self._possible_values.copy()
-        for tile in self.column.tiles:
-            if tile.id != self.id:
-                temp -= tile.possible_values
-        return temp
+        selfProof = True   # This is used to avoid removing the tile's own possible values
+        for subset in values:
+            if subset == temp and selfProof:
+                selfProof = not selfProof
+            else:
+                temp -= subset
+        self._unigue_column_values = temp
     
-    def findUniqueCandidatesInRows(self) -> set[int]:
+    def findUniqueCandidatesInRows(self, values: set[set[int]]) -> None:
         """
         Find the possible values for the tile based on the row
         """
         temp = self._possible_values.copy()
-        for tile in self.row.tiles:
-            if tile.id != self.id:
-                temp -= tile.possible_values
-        return temp
+        selfProof = True   # This is used to avoid removing the tile's own possible values
+        for subset in values:
+            if subset == temp and selfProof:
+                selfProof = not selfProof
+            else:
+                temp -= subset
+        self._unigue_row_values = temp
     
-    def findUniqueCandidatesInGroups(self) -> set[int]:
+    def findUniqueCandidatesInGroups(self, values: set[set[int]]) -> None:
         """
         Find the possible values for the tile based on the group
         """
         temp = self._possible_values.copy()
-        for tile in self.group.tiles:
-            if tile.id != self.id:
-                temp -= tile.possible_values
-        return temp
+        selfProof = True   # This is used to avoid removing the tile's own possible values
+        for subset in values:
+            if subset == temp and selfProof:
+                selfProof = not selfProof
+            else:
+                temp -= subset
+        self._unigue_group_values = temp
     
     def updateOnUniqueCandidates(self) -> None:
         """
         Updates the value of the tile based on the unique candidates in the column, row, and group
         """
-        col = self.findUniqueCandidatesInColumns()
-        row = self.findUniqueCandidatesInRows()
-        group = self.findUniqueCandidatesInGroups()
-        if len(col) == 1:
-            self.value = col.pop()
-        if len(row) == 1:
-            self.value = row.pop()
-        if len(group) == 1:
-            self.value = group.pop()
-    
+        sets = [self._unigue_column_values, self._unigue_row_values, self._unigue_group_values]
+        intersections = []
+
+        for n in range(1,4):
+            for combo in combinations(sets, n):
+                temp = set.intersection(*combo)
+                if temp:
+                    intersections.append(temp)
+        
+        for intersection in intersections:
+            if len(intersection) == 1:
+                self.value(intersection.pop())
+                return
+        
+        ValueError("Tile doesn't have unique possible values")
+
     def update(self) -> None:
         """
         Update the possible values and the value of the tile
         """
-        if self.value != 0:
-            return
         self.findPossibleValues()
-        self.updateValue()
-        if self.value != 0:
-            return
-        self.updateOnUniqueCandidates()
-        
+        try:
+            self.updateValue()
+        except ValueError:
+            try:
+                self.updateOnUniqueCandidates()
+            except ValueError:
+                pass
+            except:
+                print("You shouldn't be here (unique update)")
+        except:
+            print("You shouldn't be here (normal update)")
         
         

@@ -1,19 +1,27 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field, PrivateAttr
+from boardStructure import BoardStructure
+from tile import Tile
 
-@dataclass
-class Column:
+class Column(BoardStructure):
     """
     The column class has the following attributes:
     - id: the index of the column (0-8, left to right)
     - tiles: the tiles in the column
     """
-    id: int
-    values: list[int]
-    tiles: list[int]
+    _type: str = "Column"
 
-    def addTile(self, tile: int) -> None:
+    def findValues(self) -> None:
         """
-        Add a tile to the column
+        Find the values of the tiles in the column
         """
-        self.tiles.append(tile)
-        self.values.add(tile.value)
+        values = [tile.value for tile in self._tiles]
+        for tile in self._tiles:
+            tile.findInColumn(values)
+
+    def findUniqueValues(self) -> None:
+        """
+        Find the unique possible values of the tiles in the column
+        """
+        values = [tile.possible_values for tile in self._tiles]
+        for tile in self._tiles:
+            tile.findUniqueInColumn(values)
