@@ -32,8 +32,8 @@ class Tile(BaseModel):
 
     # Basic tile class to indicate a tile in the sudoku board
     id: int
-    _value: int = 0  # value for unknown tiles
-    _possible_values: set[int] = PrivateAttr(default={1, 2, 3, 4, 5, 6, 7, 8, 9})
+    tile_value: int = 0  # value for unknown tiles
+    _possible_values: set[int] = PrivateAttr(default=set([1,2,3,4,5,6,7,8,9]))
 
     # Sets of possible values based on the column, row, and group
     _column_values: set[int] = PrivateAttr(default=set())
@@ -47,12 +47,12 @@ class Tile(BaseModel):
 
     @property
     def value(self) -> int:
-        return self._value
+        return self.tile_value
     
     @value.setter
     def value(self, value: int) -> None:
-        self._value = value
-        self._possible_values = {}
+        self.tile_value = value
+        self._possible_values = set()
 
     @property
     def possible_values(self) -> set[int]:
@@ -62,19 +62,19 @@ class Tile(BaseModel):
         """
         Find the possible values for the tile based on the column
         """
-        self._column_values = self._possible_values - set(values)
+        self._column_values = self._possible_values - values
 
     def findInRow(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the row
         """
-        self._row_values = self._possible_values - set(values)
+        self._row_values = self._possible_values - values
     
     def findInGroup(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the group
         """
-        self._group_values = self._possible_values - set(values)
+        self._group_values = self._possible_values - values
     
     def findPossibleValues(self) -> None:
         """
@@ -88,13 +88,13 @@ class Tile(BaseModel):
         Update the value of the tile based on the possible values
         """
         if len(self._possible_values) == 1:
-            self.value(self._possible_values.pop())
+            self.value = self._possible_values.pop()
         elif len(self._possible_values) == 0:
-            ValueError("Tile has no possible values")
+            raise ValueError("Tile has no possible values")
         else:
-            ValueError("Tile has multiple possible values")
+            raise ValueError("Tile has multiple possible values")
 
-    def findUniqueCandidatesInColumns(self, values: set[set[int]]) -> None:
+    def findUniqueCandidatesInColumns(self, values: list[set[int]]) -> None:
         """
         Find the possible values for the tile based on the column
         """
@@ -107,7 +107,7 @@ class Tile(BaseModel):
                 temp -= subset
         self._unigue_column_values = temp
     
-    def findUniqueCandidatesInRows(self, values: set[set[int]]) -> None:
+    def findUniqueCandidatesInRows(self, values: list[set[int]]) -> None:
         """
         Find the possible values for the tile based on the row
         """
@@ -120,7 +120,7 @@ class Tile(BaseModel):
                 temp -= subset
         self._unigue_row_values = temp
     
-    def findUniqueCandidatesInGroups(self, values: set[set[int]]) -> None:
+    def findUniqueCandidatesInGroups(self, values: list[set[int]]) -> None:
         """
         Find the possible values for the tile based on the group
         """
@@ -148,10 +148,10 @@ class Tile(BaseModel):
         
         for intersection in intersections:
             if len(intersection) == 1:
-                self.value(intersection.pop())
+                self.value = intersection.pop()
                 return
         
-        ValueError("Tile doesn't have unique possible values")
+        raise ValueError("Tile doesn't have unique possible values")
 
     def update(self) -> None:
         """
@@ -165,9 +165,9 @@ class Tile(BaseModel):
                 self.updateOnUniqueCandidates()
             except ValueError:
                 pass
-            except:
-                print("You shouldn't be here (unique update)")
-        except:
-            print("You shouldn't be here (normal update)")
+            except Exception as e:
+                print(f"{e}: You shouldn't be here (unique update)")
+        except Exception as e:
+            print(f"{e}: You shouldn't be here (normal update)")
         
         

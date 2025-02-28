@@ -3,8 +3,8 @@ from tile import Tile
 
 class BoardStructure(BaseModel):
     id: int
-    _type: str
-    _tiles: list[Tile] = Field(default_factory=list)
+    _type: str = PrivateAttr()
+    _tiles: list[Tile] = PrivateAttr(default=[])
 
     @property
     def tiles(self) -> list[Tile]:

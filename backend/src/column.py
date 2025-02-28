@@ -16,7 +16,7 @@ class Column(BoardStructure):
         """
         values = [tile.value for tile in self._tiles]
         for tile in self._tiles:
-            tile.findInColumn(values)
+            tile.findInColumn(set(values))
 
     def findUniqueValues(self) -> None:
         """
@@ -24,4 +24,4 @@ class Column(BoardStructure):
         """
         values = [tile.possible_values for tile in self._tiles]
         for tile in self._tiles:
-            tile.findUniqueInColumn(values)
+            tile.findUniqueCandidatesInColumns(values)

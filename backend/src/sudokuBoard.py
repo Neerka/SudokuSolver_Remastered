@@ -6,23 +6,26 @@ from group import Group
 from tile import Tile
 
 class Board(BaseModel):
-    _instance: Optional["Board"] = PrivateAttr(default=None)
+    _instance: "Board" = PrivateAttr(default=None)
 
     # id: int
-    _columns: list[Column] = Field(default_factory=list)
-    _rows: list[Row] = Field(default_factory=list)
-    _groups: list[Group] = Field(default_factory=list)
+    _columns: list[Column] = PrivateAttr(default=[])
+    _rows: list[Row] = PrivateAttr(default=[])
+    _groups: list[Group] = PrivateAttr(default=[])
 
     def __init__(self, tiles: list[Tile], **data,):
         super().__init__(**data)
-        if Board._instance is not None:
-            raise ValueError("Board is a singleton")
+        if self._instance is not None:
+            raise ValueError("Board already exists")
         self._instance = self
         for i in range(9):
-            self._columns.append(Column(id=i))
-            self._rows.append(Row(id=i))
-            self._groups.append(Group(id=i))
-        self.assignTiles(self, tiles)
+            col = Column(id=i)
+            row = Row(id=i)
+            gro = Group(id=i)
+            self._columns.append(col)
+            self._rows.append(row)
+            self._groups.append(gro)
+        self.assignTiles(tiles)
 
     def assignTiles(self, tiles: list[Tile]) -> None:
         for tile in tiles:
@@ -33,8 +36,8 @@ class Board(BaseModel):
                 self._groups[(tileID // 9) // 3 * 3 + (tileID % 9) // 3].addTile(tile)
             except ValueError as e:
                 print(e)
-            except:
-                print("WTF YOU DO HERE???")
+            except Exception as e:
+                print(f"{e}: WTF YOU DO HERE???")
 
     @classmethod
     def getInstance(cls, **data) -> "Board":
@@ -77,5 +80,33 @@ class Board(BaseModel):
     def updateTiles(self) -> None:
         for group in self._groups:
             group.updateTiles()
+
+    def solve(self) -> None:
+        try:
+            counter: int = 0
+            while True:
+                self.findValues()
+                self.findUniqueValues()
+                self.updateTiles()
+                if self.checkSolved()[0]:
+                    break
+                elif not self.checkSolved()[0] and not self.checkSolved()[1]:
+                    counter += 1
+                if counter > 5:
+                    break
+        except Exception as e:
+            print(f"{e}")
+    
+    def checkSolved(self) -> tuple[bool, bool]:
+        for group in self._groups:
+            if not group.checkGroup()[0] and not group.checkGroup()[1]:
+                return False, False
+            elif not group.checkGroup()[0]:
+                return False, True
+        return True, True
+    
+    def lookAtTileValue(self, tileID: int) -> int:
+        idx: int = ((tileID // 9) // 3) * 3 + (tileID % 9) // 3 
+        return self._groups[idx].lookAtTileValue(tileID)
 
 
