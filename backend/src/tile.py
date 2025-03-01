@@ -169,5 +169,16 @@ class Tile(BaseModel):
                 print(f"{e}: You shouldn't be here (unique update)")
         except Exception as e:
             print(f"{e}: You shouldn't be here (normal update)")
-        
-        
+
+    def removeCommon(self, common: set[int]) -> None:
+        if self._possible_values != common:
+            self._possible_values -= common
+
+    def findHidden(self, common: set[int]) -> bool:
+        return common.issubset(self._possible_values)
+    
+    def clearHidden(self, common: set[int]) -> None:
+        if common.issubset(self._possible_values):
+            self._possible_values = common
+        else:
+            self._possible_values -= common

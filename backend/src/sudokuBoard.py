@@ -64,10 +64,16 @@ class Board(BaseModel):
     def findValues(self) -> None:
         for column in self._columns:
             column.findValues()
+            column.redundantNormalCommonValues()
+            column.findAndClearHiddenCommon()
         for row in self._rows:
             row.findValues()
+            row.redundantNormalCommonValues()
+            row.findAndClearHiddenCommon()
         for group in self._groups:
             group.findValues()
+            group.redundantNormalCommonValues()
+            group.findAndClearHiddenCommon()
     
     def findUniqueValues(self) -> None:
         for column in self._columns:
