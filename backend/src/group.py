@@ -44,3 +44,9 @@ class Group(BoardStructure):
             if tile.id == tileID:
                 return tile.value
         raise ValueError("Tile not found in group")
+    
+    def lookAtTilePossibleValues(self, tileID: int) -> set[int]:
+        for tile in self._tiles:
+            if tile.id == tileID:
+                return tile.possible_values
+        raise ValueError("Tile not found in group")

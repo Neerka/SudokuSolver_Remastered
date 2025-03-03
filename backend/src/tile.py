@@ -41,9 +41,9 @@ class Tile(BaseModel):
     _group_values: set[int] = PrivateAttr(default=set())
 
     # Sets of unique possible values based on the column, row, and group (used for advanced solving)
-    _unigue_column_values: set[int] = PrivateAttr(default=set())
-    _unigue_row_values: set[int] = PrivateAttr(default=set())
-    _unigue_group_values: set[int] = PrivateAttr(default=set())
+    _unique_column_values: set[int] = PrivateAttr(default=set())
+    _unique_row_values: set[int] = PrivateAttr(default=set())
+    _unique_group_values: set[int] = PrivateAttr(default=set())
 
     @property
     def value(self) -> int:
@@ -63,24 +63,28 @@ class Tile(BaseModel):
         Find the possible values for the tile based on the column
         """
         self._column_values = self._possible_values - values
+        # print(self._column_values) if self.value == 0 else 0
 
     def findInRow(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the row
         """
         self._row_values = self._possible_values - values
+        # print(self._row_values) if self.value == 0 else 0
     
     def findInGroup(self, values: set[int]) -> None:
         """
         Find the possible values for the tile based on the group
         """
         self._group_values = self._possible_values - values
+        # print(self._group_values) if self.value == 0 else 0
     
     def findPossibleValues(self) -> None:
         """
         Find the possible values for the tile based on the column, row, and group
         """
         result = self._column_values & self._row_values & self._group_values
+        # print(result) if self.value == 0 else 0
         self._possible_values = result
     
     def updateValue(self) -> None:
@@ -105,7 +109,7 @@ class Tile(BaseModel):
                 selfProof = not selfProof
             else:
                 temp -= subset
-        self._unigue_column_values = temp
+        self._unique_column_values = temp
     
     def findUniqueCandidatesInRows(self, values: list[set[int]]) -> None:
         """
@@ -118,7 +122,7 @@ class Tile(BaseModel):
                 selfProof = not selfProof
             else:
                 temp -= subset
-        self._unigue_row_values = temp
+        self._unique_row_values = temp
     
     def findUniqueCandidatesInGroups(self, values: list[set[int]]) -> None:
         """
@@ -131,13 +135,13 @@ class Tile(BaseModel):
                 selfProof = not selfProof
             else:
                 temp -= subset
-        self._unigue_group_values = temp
+        self._unique_group_values = temp
     
     def updateOnUniqueCandidates(self) -> None:
         """
         Updates the value of the tile based on the unique candidates in the column, row, and group
         """
-        sets = [self._unigue_column_values, self._unigue_row_values, self._unigue_group_values]
+        sets = [self._unique_column_values, self._unique_row_values, self._unique_group_values]
         intersections = []
 
         for n in range(1,4):
@@ -160,11 +164,11 @@ class Tile(BaseModel):
         self.findPossibleValues()
         try:
             self.updateValue()
-        except ValueError:
+        except ValueError as g:
             try:
                 self.updateOnUniqueCandidates()
-            except ValueError:
-                pass
+            except ValueError as e:
+                print(f'{self.id}: {e}') if self.value == 0 else 0
             except Exception as e:
                 print(f"{e}: You shouldn't be here (unique update)")
         except Exception as e:

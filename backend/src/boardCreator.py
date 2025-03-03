@@ -8,6 +8,7 @@ class BoardCreator(BaseModel):
     """
     The board processor class has the following attributes:
     - board: the SudokuBoard object
+    - board_source: file from which the board is loaded
     """
     _board: Board = PrivateAttr(default=None)
     _board_source: str = PrivateAttr(default="")
@@ -15,7 +16,6 @@ class BoardCreator(BaseModel):
     def __init__(self, board_source: str, **data):
         super().__init__(**data)
         self._board_source = board_source
-        self.createBoard()
 
     @property
     def board(self) -> Board:
@@ -33,7 +33,7 @@ class BoardCreator(BaseModel):
     def board_source(self, board_source: str) -> None:
         self._board_source = board_source
 
-    def createBoard(self) -> None:
+    def createBoard(self, boardID: int) -> None:
         board = []
         tiles = []
         with open(self.board_source, "r") as source:
@@ -48,10 +48,13 @@ class BoardCreator(BaseModel):
                 temp.value = board[i]
             # temp.value(board[i]) if board[i] != 0 else 0
             tiles.append(temp)
-        self._board = Board(tiles)
+        self._board = Board(tiles, id=boardID)
 
     def solveBoard(self) -> None:
         self._board.solve()
 
     def lookAtTileValue(self, tileID: int) -> int:
         return self._board.lookAtTileValue(tileID)
+    
+    def lookAtTilePossibleValues(self, tileID: int) -> set[int]:
+        return self._board.lookAtTilePossibleValues(tileID)

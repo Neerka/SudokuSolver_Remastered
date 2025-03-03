@@ -7,10 +7,17 @@ from boardCreator import BoardCreator
 def test_sudokuCreator():
     board_src = "backend/test_resources/sample1.in"
     sudoku = BoardCreator(board_src)
+    sudoku.createBoard(0)
+
+    values = []
+    for line in open(board_src):
+        line = line.strip()
+        for item in line:
+            item = int(item)
+            values.append(item)
 
     assert sudoku.board is not None
-    assert sudoku.lookAtTileValue(0) is not None
-    assert sudoku.lookAtTileValue(0) == 5
-    assert sudoku.lookAtTileValue(1) == 0
+    for i in range(81):
+        assert sudoku.lookAtTileValue(i) == values[i]
 
     

@@ -6,18 +6,13 @@ from group import Group
 from tile import Tile
 
 class Board(BaseModel):
-    _instance: "Board" = PrivateAttr(default=None)
-
-    # id: int
+    id: int
     _columns: list[Column] = PrivateAttr(default=[])
     _rows: list[Row] = PrivateAttr(default=[])
     _groups: list[Group] = PrivateAttr(default=[])
 
     def __init__(self, tiles: list[Tile], **data,):
         super().__init__(**data)
-        if self._instance is not None:
-            raise ValueError("Board already exists")
-        self._instance = self
         for i in range(9):
             col = Column(id=i)
             row = Row(id=i)
@@ -38,12 +33,6 @@ class Board(BaseModel):
                 print(e)
             except Exception as e:
                 print(f"{e}: WTF YOU DO HERE???")
-
-    @classmethod
-    def getInstance(cls, **data) -> "Board":
-        if cls._instance is None:
-            cls._instance = cls(**data)
-        return cls._instance
     
     @property
     def columns(self) -> list[Column]:
@@ -64,17 +53,11 @@ class Board(BaseModel):
     def findValues(self) -> None:
         for column in self._columns:
             column.findValues()
-            column.redundantNormalCommonValues()
-            column.findAndClearHiddenCommon()
         for row in self._rows:
             row.findValues()
-            row.redundantNormalCommonValues()
-            row.findAndClearHiddenCommon()
         for group in self._groups:
             group.findValues()
-            group.redundantNormalCommonValues()
-            group.findAndClearHiddenCommon()
-    
+
     def findUniqueValues(self) -> None:
         for column in self._columns:
             column.findUniqueValues()
@@ -87,19 +70,37 @@ class Board(BaseModel):
         for group in self._groups:
             group.updateTiles()
 
+    def nakedPairs(self) -> None:
+        for column in self._columns:
+            column.redundantNormalCommonValues()
+        for row in self._rows:
+            row.redundantNormalCommonValues()
+        for group in self._groups:
+            group.redundantNormalCommonValues()
+
+    def hiddenPairs(self) -> None:
+        for column in self._columns:
+            column.findAndClearHiddenCommon()
+        for row in self._rows:
+            row.findAndClearHiddenCommon()
+        for group in self._groups:
+            group.findAndClearHiddenCommon()
+
     def solve(self) -> None:
         try:
             counter: int = 0
             while True:
                 self.findValues()
-                self.findUniqueValues()
                 self.updateTiles()
+                self.findUniqueValues()
                 if self.checkSolved()[0]:
                     break
                 elif not self.checkSolved()[0] and not self.checkSolved()[1]:
                     counter += 1
-                if counter > 5:
+                if counter > 20:
                     break
+                self.nakedPairs()
+                self.hiddenPairs()
         except Exception as e:
             print(f"{e}")
     
@@ -114,5 +115,9 @@ class Board(BaseModel):
     def lookAtTileValue(self, tileID: int) -> int:
         idx: int = ((tileID // 9) // 3) * 3 + (tileID % 9) // 3 
         return self._groups[idx].lookAtTileValue(tileID)
+    
+    def lookAtTilePossibleValues(self, tileID: int) -> set[int]:
+        idx: int = ((tileID // 9) // 3) * 3 + (tileID % 9) // 3
+        return self._groups[idx].lookAtTilePossibleValues(tileID)
 
 
