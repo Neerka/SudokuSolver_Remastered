@@ -147,7 +147,7 @@ class Tile(BaseModel):
         for n in range(1,4):
             for combo in combinations(sets, n):
                 temp = set.intersection(*combo)
-                if temp:
+                if len(temp) != 0:
                     intersections.append(temp)
         
         for intersection in intersections:
@@ -155,7 +155,7 @@ class Tile(BaseModel):
                 self.value = intersection.pop()
                 return
         
-        raise ValueError("Tile doesn't have unique possible values")
+        raise ValueError(f"Tile doesn't have unique possible values: {self._possible_values}")
 
     def update(self) -> None:
         """

@@ -91,16 +91,16 @@ class Board(BaseModel):
             counter: int = 0
             while True:
                 self.findValues()
-                self.updateTiles()
+                self.nakedPairs()
+                self.hiddenPairs()
                 self.findUniqueValues()
+                self.updateTiles()
                 if self.checkSolved()[0]:
                     break
                 elif not self.checkSolved()[0] and not self.checkSolved()[1]:
                     counter += 1
                 if counter > 20:
                     break
-                self.nakedPairs()
-                self.hiddenPairs()
         except Exception as e:
             print(f"{e}")
     

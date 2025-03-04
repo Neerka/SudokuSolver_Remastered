@@ -64,13 +64,20 @@ class BoardStructure(BaseModel):
         # print('values mapped')
         self.reverseMappedValues()
         # print("Hidden pair reduction")
-        for key, value in self._possible_values_reverse_map.items():
-            combination_set: list[tuple[int]] = list(combinations(value, key))
+        sorted_keys: list[int] = sorted(self._possible_values_reverse_map, reverse=True)
+        values: set[int] = set()
+        for key in sorted_keys:
+            check: set[int] = set()
+            values.update(self._possible_values_reverse_map[key])
+            combination_set: list[tuple[int]] = list(combinations(values, key))
             for combination in combination_set:
                 counter: int = 0
                 combination = set(combination)
-                for tile in self._tiles:
-                    counter += 1 if tile.findHidden(combination) else 0
-                if counter == key:
-                    [tile.clearHidden(combination) for tile in self._tiles]
+                if not (combination & check):
+                    for tile in self._tiles:
+                        counter += 1 if tile.findHidden(combination) else 0
+                    if counter == key:
+                        [tile.clearHidden(combination) for tile in self._tiles]
+                        values = values.difference(combination)
+                        check.update(combination)
         

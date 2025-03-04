@@ -18,8 +18,8 @@ def test_tile():
     }
 
 def test_solving():
-    board_src = "backend/test_resources/sample1.in"
-    board_wynik = "backend/test_resources/sample1.exp"
+    board_src = "backend/test_resources/sample2.in"
+    board_wynik = "backend/test_resources/sample2.exp"
     sudoku = BoardCreator(board_src)
     sudoku.createBoard(0)
 
