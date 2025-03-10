@@ -50,8 +50,8 @@ class BoardCreator(BaseModel):
             tiles.append(temp)
         self._board = Board(tiles, id=boardID)
 
-    def solveBoard(self) -> None:
-        self._board.solve()
+    def solveBoard(self) -> bool:
+        return self._board.solve()
 
     def lookAtTileValue(self, tileID: int) -> int:
         return self._board.lookAtTileValue(tileID)

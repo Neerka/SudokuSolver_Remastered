@@ -41,9 +41,9 @@ class Tile(BaseModel):
     _group_values: set[int] = PrivateAttr(default=set())
 
     # Sets of unique possible values based on the column, row, and group (used for advanced solving)
-    _unique_column_values: set[int] = PrivateAttr(default=set())
-    _unique_row_values: set[int] = PrivateAttr(default=set())
-    _unique_group_values: set[int] = PrivateAttr(default=set())
+    # _unique_column_values: set[int] = PrivateAttr(default=set())
+    # _unique_row_values: set[int] = PrivateAttr(default=set())
+    # _unique_group_values: set[int] = PrivateAttr(default=set())
 
     @property
     def value(self) -> int:
@@ -86,11 +86,19 @@ class Tile(BaseModel):
         result = self._column_values & self._row_values & self._group_values
         # print(result) if self.value == 0 else 0
         self._possible_values = result
-    
+
+    """
+    FROM NOW ON, THOSE ARE SOME RELICS OF THE PAST, WHEN I DIDN'T THINK OF BACKTRACKING
+
+    SOME MIGHT FINDS THOSE SOMEHOW USEFUL, WARN THEM IF THEY DO
+    TO SAY THOSE ARE SUBOPTIMAL IS A MASSIVE UNDERSTATEMENT
+    """
+
+    """
     def updateValue(self) -> None:
-        """
-        Update the value of the tile based on the possible values
-        """
+        
+        # Update the value of the tile based on the possible values
+        
         if len(self._possible_values) == 1:
             self.value = self._possible_values.pop()
         elif len(self._possible_values) == 0:
@@ -99,9 +107,9 @@ class Tile(BaseModel):
             raise ValueError("Tile has multiple possible values")
 
     def findUniqueCandidatesInColumns(self, values: list[set[int]]) -> None:
-        """
-        Find the possible values for the tile based on the column
-        """
+        
+        # Find the possible values for the tile based on the column
+        
         temp = self._possible_values.copy()
         selfProof = True   # This is used to avoid removing the tile's own possible values
         for subset in values:
@@ -112,9 +120,9 @@ class Tile(BaseModel):
         self._unique_column_values = temp
     
     def findUniqueCandidatesInRows(self, values: list[set[int]]) -> None:
-        """
-        Find the possible values for the tile based on the row
-        """
+        
+        # Find the possible values for the tile based on the row
+        
         temp = self._possible_values.copy()
         selfProof = True   # This is used to avoid removing the tile's own possible values
         for subset in values:
@@ -125,9 +133,9 @@ class Tile(BaseModel):
         self._unique_row_values = temp
     
     def findUniqueCandidatesInGroups(self, values: list[set[int]]) -> None:
-        """
-        Find the possible values for the tile based on the group
-        """
+        
+        # Find the possible values for the tile based on the group
+        
         temp = self._possible_values.copy()
         selfProof = True   # This is used to avoid removing the tile's own possible values
         for subset in values:
@@ -138,9 +146,9 @@ class Tile(BaseModel):
         self._unique_group_values = temp
     
     def updateOnUniqueCandidates(self) -> None:
-        """
-        Updates the value of the tile based on the unique candidates in the column, row, and group
-        """
+       
+        # Updates the value of the tile based on the unique candidates in the column, row, and group
+        
         sets = [self._unique_column_values, self._unique_row_values, self._unique_group_values]
         intersections = []
 
@@ -158,9 +166,9 @@ class Tile(BaseModel):
         raise ValueError(f"Tile doesn't have unique possible values: {self._possible_values}")
 
     def update(self) -> None:
-        """
-        Update the possible values and the value of the tile
-        """
+       
+        # Update the possible values and the value of the tile
+        
         self.findPossibleValues()
         try:
             self.updateValue()
@@ -186,3 +194,4 @@ class Tile(BaseModel):
             self._possible_values = common
         else:
             self._possible_values -= common
+    """

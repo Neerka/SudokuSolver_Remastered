@@ -29,6 +29,26 @@ class BoardStructure(BaseModel):
         for tile in self._tiles:
             tile.update()
 
+    def checkIfSolvable(self) -> bool:
+        seen_values: set[int] = set()
+        print(f"Checking {self._type} {self.id}.   Check set: {seen_values}")
+        for tile in self._tiles:
+            if tile.value != 0:
+                if tile.value not in seen_values:
+                    seen_values.add(tile.value)
+                else:
+                    return False
+        return True
+    
+    """
+    FROM NOW ON, THOSE ARE SOME RELICS OF THE PAST, WHEN I DIDN'T THINK OF BACKTRACKING
+
+    SOME MIGHT FINDS THOSE SOMEHOW USEFUL, WARN THEM IF THEY DO
+    TO SAY THOSE ARE SUBOPTIMAL IS A MASSIVE UNDERSTATEMENT
+    """
+
+
+    """
     def redundantNormalCommonValues(self) -> None:
         map: dict = {}
         # print(map)
@@ -80,4 +100,4 @@ class BoardStructure(BaseModel):
                         [tile.clearHidden(combination) for tile in self._tiles]
                         values = values.difference(combination)
                         check.update(combination)
-        
+        """

@@ -18,11 +18,25 @@ class Group(BoardStructure):
         values = [tile.value for tile in self._tiles]
         for tile in self._tiles:
             tile.findInGroup(set(values))
+
+    def lookAtTileValue(self, tileID: int) -> int:
+        for tile in self._tiles:
+            if tile.id == tileID:
+                return tile.value
+        raise ValueError("Tile not found in group")
     
+    """
+    FROM NOW ON, THOSE ARE SOME RELICS OF THE PAST, WHEN I DIDN'T THINK OF BACKTRACKING
+
+    SOME MIGHT FINDS THOSE SOMEHOW USEFUL, WARN THEM IF THEY DO
+    TO SAY THOSE ARE SUBOPTIMAL IS A MASSIVE UNDERSTATEMENT
+    """
+
+    """
     def findUniqueValues(self) -> None:
-        """
-        Find the unique possible values of the tiles in the group
-        """
+
+        # Find the unique possible values of the tiles in the group
+
         values = [tile.possible_values for tile in self._tiles]
         for tile in self._tiles:
             tile.findUniqueCandidatesInGroups(values)
@@ -39,14 +53,9 @@ class Group(BoardStructure):
             return False, True
         return True, True
     
-    def lookAtTileValue(self, tileID: int) -> int:
-        for tile in self._tiles:
-            if tile.id == tileID:
-                return tile.value
-        raise ValueError("Tile not found in group")
-    
     def lookAtTilePossibleValues(self, tileID: int) -> set[int]:
         for tile in self._tiles:
             if tile.id == tileID:
                 return tile.possible_values
-        raise ValueError("Tile not found in group")
+        raise ValueError("Tile not found in group")"
+    """
