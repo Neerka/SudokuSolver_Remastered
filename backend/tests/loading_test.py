@@ -6,8 +6,8 @@ from boardCreator import BoardCreator
 
 def test_sudokuCreator():
     board_src = "backend/test_resources/sample1.in"
-    sudoku = BoardCreator(board_src)
-    sudoku.createBoard(0)
+    creator = BoardCreator()
+    board = creator.createBoard(board_src, 0)
 
     values = []
     for line in open(board_src):
@@ -16,8 +16,8 @@ def test_sudokuCreator():
             item = int(item)
             values.append(item)
 
-    assert sudoku.board is not None
+    assert board is not None
     for i in range(81):
-        assert sudoku.lookAtTileValue(i) == values[i]
+        assert board.lookAtTileValue(i) == values[i]
 
     

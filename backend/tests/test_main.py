@@ -20,8 +20,8 @@ def test_tile():
 def test_solving():
     board_src = "backend/test_resources/sample1.in"
     board_wynik = "backend/test_resources/sample1.exp"
-    sudoku = BoardCreator(board_src)
-    sudoku.createBoard(0)
+    creator = BoardCreator()
+    board = creator.createBoard(board_src, 0)
 
     values = []
     for line in open(board_wynik):
@@ -31,6 +31,6 @@ def test_solving():
             values.append(item)
 
     
-    assert sudoku.solveBoard() is True
+    assert board.solve() is True
     for i in range(81):
-        assert sudoku.lookAtTileValue(i) == values[i]
+        assert board.lookAtTileValue(i) == values[i]
